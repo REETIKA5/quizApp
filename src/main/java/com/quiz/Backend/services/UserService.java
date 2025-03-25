@@ -50,4 +50,8 @@ public class UserService {
         }
         return false;
     }
+    public void save(User user) {
+        userRepository.save(user); // Ensure user is saved or updated in the database
+    }
+
 }

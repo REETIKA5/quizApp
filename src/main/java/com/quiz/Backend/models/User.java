@@ -1,6 +1,8 @@
 package com.quiz.Backend.models;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "users")
@@ -10,16 +12,25 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Username is required")
     @Column(unique = true, nullable = false)
     private String username;
 
+
+    @Email(message = "Email must be valid")
+    @NotBlank(message = "Email is required")
     @Column(unique = true, nullable = false)
     private String email;
 
+    @NotBlank(message = "Password is required")
     @Column(nullable = false)
     private String password;
 
+
+    @NotBlank(message = "First name is required")
     private String firstName;
+
+    @NotBlank(message = "Last name is required")
     private String lastName;
 
     @Enumerated(EnumType.STRING)
@@ -36,10 +47,10 @@ public class User {
         PLAYER
     }
 
-    // Default constructor
+
     public User() {}
 
-    // Full constructor
+
     public User(Long id, String username, String email, String password,
                 String firstName, String lastName, Role role, String pictureUrl,
                 String phoneNumber, Integer age, String address) {
@@ -56,7 +67,7 @@ public class User {
         this.address = address;
     }
 
-    // Getters and Setters (same as before)
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

@@ -1,7 +1,11 @@
 package com.quiz.Backend.Config;
 
+import com.quiz.Backend.models.User;
+import com.quiz.Backend.repositories.UserRepository;
+import com.quiz.Backend.security.JwtAuthenticationFilter;
 import com.quiz.Backend.services.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -14,6 +18,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -44,27 +49,48 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
+    @Bean
+    public CommandLineRunner seedAdminUser(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        return args -> {
+            if (userRepository.findByUsername("admin").isEmpty()) {
+                User admin = new User();
+                admin.setUsername("admin");
+                admin.setPassword(passwordEncoder.encode("P@ss123"));
+                admin.setEmail("admin@example.com");
+                admin.setFirstName("Admin");
+                admin.setLastName("User");
+                admin.setRole(User.Role.ADMIN);
+                admin.setPhoneNumber("0000000000");
+                admin.setAge(30);
+                admin.setAddress("Admin Street");
+                userRepository.save(admin);
+                System.out.println("✅ Default admin user created.");
+            } else {
+                System.out.println("ℹ️ Admin user already exists.");
+            }
+        };
+    }
 
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtFilter) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+                                "/api/auth/login",
                                 "/api/users/register",
-                                "/api/tournaments",       // exact match for POST
-                                "/api/tournaments/**",    // all nested (GET, PUT, DELETE, like, etc.)
-                                "/api/questions/**"
+                                "/api/users/request-reset-password",
+                                "/api/users/reset-password",
+                                "/api/users/{id}"
                         ).permitAll()
-
-
                         .anyRequest().authenticated()
                 )
-                .httpBasic(httpBasic -> {}) // ← optional config block
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 );
+
+        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
