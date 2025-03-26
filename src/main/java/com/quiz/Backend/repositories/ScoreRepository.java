@@ -10,4 +10,6 @@ import java.util.List;
 public interface ScoreRepository extends JpaRepository<Score, Long> {
     List<Score> findByPlayer(User player);
     List<Score> findByTournament(Tournament tournament);
+    List<Score> findByTournamentId(Long tournamentId);
+    int countByTournamentId(Long tournamentId);
 }

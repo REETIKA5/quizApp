@@ -43,7 +43,6 @@ public class UserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // Get logged-in user profile (placeholder - needs security context)
     @GetMapping("/me")
     public ResponseEntity<User> getCurrentUser(@RequestParam String username) {
         return userService.findByUsername(username)
@@ -51,27 +50,26 @@ public class UserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // Get all users (admin only)
+
     @GetMapping
     public List<User> getAllUsers() {
         return userService.getAllUsers();
     }
 
-    // Delete user
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
 
-    // Update user profile
+
     @PutMapping("/{id}")
     public ResponseEntity<User> updateUser(@PathVariable Long id, @Valid @RequestBody User user) {
         user.setId(id);
         return ResponseEntity.ok(userService.updateUser(user));
     }
 
-    // Request password reset
+
     @PostMapping("/request-reset-password")
     public ResponseEntity<String> requestResetPassword(@RequestParam String email) {
         boolean result = userService.requestPasswordReset(email);
@@ -93,4 +91,6 @@ public class UserController {
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Invalid email.");
     }
+
+    
 }

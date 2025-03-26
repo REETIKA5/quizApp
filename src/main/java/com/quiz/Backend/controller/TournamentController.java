@@ -2,6 +2,7 @@ package com.quiz.Backend.controller;
 
 import com.quiz.Backend.models.Question;
 import com.quiz.Backend.models.Tournament;
+import com.quiz.Backend.models.TournamentStatus;
 import com.quiz.Backend.services.TournamentService;
 import com.quiz.Backend.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,21 @@ public class TournamentController {
     @Autowired
     private TournamentService tournamentService;
 
+    // Method to allow user to participate in the tournament
+    @PostMapping("/{id}/participate/{username}")
+    public ResponseEntity<String> participateInTournament(@PathVariable Long id, @PathVariable String username) {
+        // Check if the tournament is ongoing
+        if (!tournamentService.canParticipate(id)) {
+            return ResponseEntity.status(403).body("Tournament is not ongoing. You cannot participate.");
+        }
+
+        // Add the user to the tournament participation list
+        tournamentService.participateInTournament(id, username);
+
+        return ResponseEntity.ok("Successfully joined the tournament!");
+    }
+
+
     @Autowired
     private UserService userService;
 
@@ -26,7 +42,6 @@ public class TournamentController {
     public Tournament createTournament(@RequestBody Tournament tournament) {
         return tournamentService.createTournament(tournament);
     }
-
 
     @GetMapping("/{id}")
     public ResponseEntity<Tournament> getTournament(@PathVariable Long id) {
@@ -51,6 +66,8 @@ public class TournamentController {
         tournamentService.deleteTournament(id);
         return ResponseEntity.noContent().build();
     }
+
+    // Like/Unlike Tournament
     @PostMapping("/{id}/like/{username}")
     public ResponseEntity<Map<String, Object>> likeTournament(@PathVariable Long id, @PathVariable String username) {
         tournamentService.incrementLikes(id, username);
@@ -63,10 +80,24 @@ public class TournamentController {
         return ResponseEntity.ok(response);
     }
 
-
+    // Get all questions for a specific tournament
     @GetMapping("/{id}/questions")
     public List<Question> getQuestions(@PathVariable Long id) {
         Tournament tournament = tournamentService.getTournamentById(id).orElseThrow();
         return tournament.getQuestions();
     }
+
+    // Get tournaments by status (upcoming, ongoing, past, participated)
+    @GetMapping("/status/{status}")
+    public List<Tournament> getTournamentsByStatus(@PathVariable TournamentStatus status) {
+        return tournamentService.getTournamentsByStatus(status);
+    }
+
+    // Get ongoing tournaments
+    @GetMapping("/ongoing")
+    public List<Tournament> getOngoingTournaments() {
+        return tournamentService.getOngoingTournaments();
+    }
+
+
 }

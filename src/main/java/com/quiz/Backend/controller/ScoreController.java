@@ -38,6 +38,13 @@ public class ScoreController {
         Score score = scoreService.savePlayerScore(tournament, user, playerScore);
         return new ResponseEntity<>(score, HttpStatus.CREATED);
     }
+    @PostMapping("/submit/{tournamentId}/{userId}")
+    public ResponseEntity<Score> submitQuiz(@PathVariable Long tournamentId,
+                                            @PathVariable Long userId,
+                                            @RequestParam List<String> submittedAnswers) {
+        Score score = scoreService.submitQuiz(tournamentId, userId, submittedAnswers);
+        return new ResponseEntity<>(score, HttpStatus.CREATED);
+    }
 
     @GetMapping("/tournament/{id}")
     public List<Score> getScoresByTournament(@PathVariable Long tournamentId) {

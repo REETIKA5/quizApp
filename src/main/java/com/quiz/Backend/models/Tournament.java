@@ -3,7 +3,9 @@ package com.quiz.Backend.models;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "tournaments")
@@ -18,7 +20,10 @@ public class Tournament {
     private String difficulty; // EASY, MEDIUM, HARD
     private LocalDate startDate;
     private LocalDate endDate;
-    private int likes;
+
+
+    @Enumerated(EnumType.STRING)
+    private TournamentStatus status;
 
     @OneToMany(mappedBy = "tournament", cascade = CascadeType.ALL)
     private List<Question> questions;
@@ -26,11 +31,21 @@ public class Tournament {
     @OneToMany(mappedBy = "tournament", cascade = CascadeType.ALL)
     private List<Score> scores;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @ManyToMany
     @JoinTable(
-            name = "tournaments_liked_by_users",  // Use your existing table name
+            name = "tournament_participants",
             joinColumns = @JoinColumn(name = "tournament_id"),
-            inverseJoinColumns = @JoinColumn(name = "liked_by_users_id")
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private Set<User> participants = new HashSet<>();
+
+
+    private int likes;
+    @ManyToMany
+    @JoinTable(
+            name = "tournaments_likes",  // Use your existing table name
+            joinColumns = @JoinColumn(name = "tournament_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     private List<User> likedByUsers = new ArrayList<>();
 
@@ -130,6 +145,21 @@ public class Tournament {
 
     public void setCategory(String category) {
         this.category = category;
+    }
+    public TournamentStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(TournamentStatus status) {
+        this.status = status;
+    }
+
+    public Set<User> getParticipants() {
+        return participants;
+    }
+
+    public void setParticipants(Set<User> participants) {
+        this.participants = participants;
     }
 }
 
