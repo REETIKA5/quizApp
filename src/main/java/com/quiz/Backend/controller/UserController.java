@@ -9,13 +9,14 @@ import org.springframework.http.ResponseEntity;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
-import java.util.Map;
+
 import java.util.Optional;
+
 
 @RestController
 @RequestMapping("/api/users")
+
 public class UserController {
 
     @Autowired
@@ -24,16 +25,24 @@ public class UserController {
     private PasswordEncoder passwordEncoder;
 
 
-    // Register user (Player or Admin)
+
     @PostMapping("/register")
     public ResponseEntity<User> register(@Valid @RequestBody User user) {
         user.setRole(User.Role.PLAYER); // default role unless admin
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.registerUser(user));
     }
+    @PostMapping("/login")
+    public ResponseEntity<String> loginUser(@RequestParam String username, @RequestParam String password) {
+        Optional<User> user = userService.loginUser(username, password);
+        if (user.isPresent()) {
+            return ResponseEntity.ok("Login successful");
+        }
+        return ResponseEntity.status(401).body("Invalid credentials");
+    }
 
-    @GetMapping("/logout")
+        @GetMapping("/logout")
     public ResponseEntity<String> logout() {
-        return ResponseEntity.ok("Logged out. Clear token on frontend.");
+        return ResponseEntity.ok("Logged out");
     }
 
     @GetMapping("/{username}")
@@ -42,14 +51,6 @@ public class UserController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
-
-    @GetMapping("/me")
-    public ResponseEntity<User> getCurrentUser(@RequestParam String username) {
-        return userService.findByUsername(username)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
 
     @GetMapping
     public List<User> getAllUsers() {
@@ -63,10 +64,13 @@ public class UserController {
     }
 
 
-    @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Long id, @Valid @RequestBody User user) {
-        user.setId(id);
-        return ResponseEntity.ok(userService.updateUser(user));
+    @PutMapping("/update/{username}")
+    public ResponseEntity<User> updateUser(@PathVariable String username, @RequestBody @Valid User updatedUser) {
+        Optional<User> user = userService.updateUserByUsername(username, updatedUser);
+        if (user.isPresent()) {
+            return ResponseEntity.ok(user.get());
+        }
+        return ResponseEntity.status(404).body(null);
     }
 
 
@@ -80,6 +84,7 @@ public class UserController {
         }
     }
 
+
     @PostMapping("/reset-password")
     public ResponseEntity<String> resetPassword(@RequestParam String email, @RequestParam String newPassword) {
         Optional<User> userOpt = userService.findByEmail(email);
@@ -92,5 +97,4 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Invalid email.");
     }
 
-    
 }

@@ -1,28 +1,25 @@
 package com.quiz.Backend.Config;
 
-import com.quiz.Backend.models.User;
-import com.quiz.Backend.repositories.UserRepository;
-import com.quiz.Backend.security.JwtAuthenticationFilter;
 import com.quiz.Backend.services.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
+
 public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
@@ -49,50 +46,43 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
-    @Bean
-    public CommandLineRunner seedAdminUser(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        return args -> {
-            if (userRepository.findByUsername("admin").isEmpty()) {
-                User admin = new User();
-                admin.setUsername("admin");
-                admin.setPassword(passwordEncoder.encode("P@ss123"));
-                admin.setEmail("admin@example.com");
-                admin.setFirstName("Admin");
-                admin.setLastName("User");
-                admin.setRole(User.Role.ADMIN);
-                admin.setPhoneNumber("0000000000");
-                admin.setAge(30);
-                admin.setAddress("Admin Street");
-                userRepository.save(admin);
-                System.out.println("✅ Default admin user created.");
-            } else {
-                System.out.println("ℹ️ Admin user already exists.");
-            }
-        };
-    }
-
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtFilter) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        System.out.println("✅ Custom SecurityFilterChain is active");
+
         http
                 .csrf(csrf -> csrf.disable())
+                .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/api/auth/login",
-                                "/api/users/register",
-                                "/api/users/request-reset-password",
-                                "/api/users/reset-password",
-                                "/api/users/{id}"
+
+                        .requestMatchers("/api/users/register",
+                                                  "/api/auth/**",
+                                                  "/api/users/**",
+                                                    "/api/tournaments/",
+                                                  "/api/tournaments/**",
+                                                    "/api/questions/**",
+                                                     "/api/scores/**",
+                                "/api/tournaments/**/submit-answers/**",
+                                                "/api/users/update/username",
+                                                "/api/scores/leaderboard/**",
+                                "api/questions/fetch/"
+
+
                         ).permitAll()
+                        .requestMatchers("/api/tournaments/create").hasRole("ADMIN")
+
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                );
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                )
 
-        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                .authenticationProvider(authenticationProvider());
 
         return http.build();
     }
 
 }
+
+

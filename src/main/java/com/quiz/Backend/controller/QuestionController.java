@@ -12,13 +12,17 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/questions")
+
 public class QuestionController {
 
-    @Autowired
-    private QuestionService questionService;
+    private final QuestionService questionService;
+    private final TournamentService tournamentService;
 
     @Autowired
-    private TournamentService tournamentService;
+    public QuestionController(QuestionService questionService, TournamentService tournamentService) {
+        this.questionService = questionService;
+        this.tournamentService = tournamentService;
+    }
 
     @PostMapping("/fetch/{tournamentId}")
     public ResponseEntity<List<Question>> fetchQuestions(
@@ -26,15 +30,28 @@ public class QuestionController {
             @RequestParam String category,
             @RequestParam String difficulty) {
 
-        Tournament tournament = tournamentService.getTournamentById(tournamentId).orElseThrow();
-        List<Question> questions = questionService.fetchQuestionsFromOpenTdb(category, difficulty, tournament);
-        return ResponseEntity.ok(questions);
-    }
+        // Get the tournament object from the database
+        Tournament tournament = tournamentService.getTournamentById(tournamentId)
+                .orElseThrow(() -> new RuntimeException("Tournament not found"));
 
+        // Fetch or create questions based on the tournament ID, category, and difficulty
+        List<Question> questions = questionService.fetchOrCreateQuestions(tournament, category, difficulty);
+
+        // Return the questions as the response
+        return ResponseEntity.ok(questions);
+
+    }
 
     @GetMapping("/tournament/{tournamentId}")
     public List<Question> getQuestionsByTournament(@PathVariable Long tournamentId) {
-        Tournament tournament = tournamentService.getTournamentById(tournamentId).orElseThrow();
+        Tournament tournament = tournamentService.getTournamentById(tournamentId)
+                .orElseThrow(() -> new RuntimeException("Tournament not found"));
         return questionService.getQuestionsByTournament(tournament);
     }
+    @DeleteMapping("/byTournament/{tournamentId}")
+    public ResponseEntity<String> deleteQuestionsByTournament(@PathVariable Long tournamentId) {
+        questionService.deleteQuestionsByTournament(tournamentId);
+        return ResponseEntity.ok("✅ All questions for tournament " + tournamentId + " deleted.");
+    }
+
 }

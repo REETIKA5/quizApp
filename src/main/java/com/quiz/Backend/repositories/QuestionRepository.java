@@ -8,4 +8,6 @@ import java.util.List;
 
 public interface QuestionRepository extends JpaRepository<Question, Long> {
     List<Question> findByTournament(Tournament tournament);
+    List<Question> findByTournamentId(Long tournamentId);
+    List<Question> findByQuestionType(String questionType);
 }

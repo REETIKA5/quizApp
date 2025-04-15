@@ -12,4 +12,6 @@ public interface ScoreRepository extends JpaRepository<Score, Long> {
     List<Score> findByTournament(Tournament tournament);
     List<Score> findByTournamentId(Long tournamentId);
     int countByTournamentId(Long tournamentId);
+    List<Score> findByTournamentIdOrderByPlayerScoreDesc(Long tournamentId);
+
 }

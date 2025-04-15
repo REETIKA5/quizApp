@@ -1,14 +1,7 @@
 package com.quiz.Backend.models;
-
-import com.quiz.Backend.dto.LeaderboardDTO;
-import com.quiz.Backend.repositories.ScoreRepository;
 import jakarta.persistence.*;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "scores")
@@ -16,6 +9,10 @@ public class Score {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    private int playerScore;
+    private LocalDateTime completedDate;
+    private int correctAnswers;
 
     @ManyToOne
     @JoinColumn(name = "quiz_tournament_id")
@@ -25,14 +22,11 @@ public class Score {
     @JoinColumn(name = "user_id")
     private User player;
 
-    private int playerScore;
-
-    private LocalDateTime completedDate;
-
-    private int correctAnswers;
-
     @ElementCollection
     private List<String> answers;
+
+
+
 
     public Score() {}
 

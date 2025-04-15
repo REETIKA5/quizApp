@@ -1,5 +1,7 @@
 package com.quiz.Backend.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 
 public class OpenTdbResult {
@@ -8,10 +10,14 @@ public class OpenTdbResult {
     private String type;
     private String difficulty;
     private String question;
+
+    @JsonProperty("correct_answer")
     private String correct_answer;
+
+    @JsonProperty("incorrect_answers")
     private List<String> incorrect_answers;
 
-    public OpenTdbResult() {}
+    // Getters and Setters
 
     public String getQuestion() {
         return question;
@@ -43,5 +49,13 @@ public class OpenTdbResult {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getDifficulty() {
+        return difficulty;
+    }
+
+    public void setDifficulty(String difficulty) {
+        this.difficulty = difficulty;
     }
 }

@@ -2,7 +2,7 @@ package com.quiz.Backend.controller;
 
 
 import com.quiz.Backend.dto.LeaderboardDTO;
-import com.quiz.Backend.models.Score;
+
 import com.quiz.Backend.services.LeaderboardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;

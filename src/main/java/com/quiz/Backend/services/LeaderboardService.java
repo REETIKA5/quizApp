@@ -16,17 +16,16 @@ public class LeaderboardService {
     @Autowired
     private ScoreRepository scoreRepository;
 
-    // Get leaderboard sorted by score for a tournament
+
     public List<LeaderboardDTO> getLeaderboard(Long tournamentId) {
         List<Score> scores = scoreRepository.findByTournamentId(tournamentId);
 
-        // Calculate total players
         int totalPlayers = scores.size();
 
-        // Calculate average score
+
         double averageScore = scores.stream().mapToInt(Score::getPlayerScore).average().orElse(0);
 
-        // Build leaderboard (sorted by score)
+
         List<LeaderboardDTO> leaderboard = scores.stream()
                 .map(score -> new LeaderboardDTO(score.getPlayer().getUsername(), score.getPlayerScore(), score.getCompletedDate()))
                 .sorted(Comparator.comparingInt(LeaderboardDTO::getScore).reversed())  // Sort by score descending
@@ -35,12 +34,12 @@ public class LeaderboardService {
         return leaderboard;
     }
 
-    // Get total players in a tournament
+
     public int getTotalPlayers(Long tournamentId) {
         return scoreRepository.countByTournamentId(tournamentId);
     }
 
-    // Get average score for a tournament
+
     public double getAverageScore(Long tournamentId) {
         List<Score> scores = scoreRepository.findByTournamentId(tournamentId);
         return scores.stream().mapToInt(Score::getPlayerScore).average().orElse(0);

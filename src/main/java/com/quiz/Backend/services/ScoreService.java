@@ -32,13 +32,13 @@ public class ScoreService {
         this.questionRepository = questionRepository;
     }
 
-    // Method to get correct answers for a tournament
+
     public List<String> getCorrectAnswers(Long tournamentId) {
         // Fetch the tournament by ID
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new RuntimeException("Tournament not found"));
 
-        // Fetch all questions associated with the tournament
+
         List<Question> questions = questionRepository.findByTournament(tournament);
 
         // Extract the correct answers and return them as a list of strings
@@ -47,39 +47,36 @@ public class ScoreService {
                 .collect(Collectors.toList());
     }
 
-    // Submit quiz and calculate score
     public Score submitQuiz(Long tournamentId, Long userId, List<String> submittedAnswers) {
-        // Fetch the tournament and user
-        Tournament tournament = tournamentRepository.findById(tournamentId).orElseThrow(() -> new RuntimeException("Tournament not found"));
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        Tournament tournament = tournamentRepository.findById(tournamentId)
+                .orElseThrow(() -> new RuntimeException("Tournament not found"));
 
-        // Get the correct answers for the tournament
-        List<String> correctAnswers = getCorrectAnswers(tournamentId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Calculate the number of correct answers
+        List<Question> questions = questionRepository.findByTournament(tournament);
         int correctCount = 0;
-        for (int i = 0; i < correctAnswers.size(); i++) {
-            if (submittedAnswers.get(i).equals(correctAnswers.get(i))) {
+
+        for (int i = 0; i < questions.size(); i++) {
+            String correct = questions.get(i).getCorrectAnswer();
+            String submitted = submittedAnswers.get(i);
+            if (correct != null && correct.equals(submitted)) {
                 correctCount++;
             }
         }
 
-        // Calculate score (assuming 10 points per correct answer)
-        int score = (correctCount * 10) / correctAnswers.size();
+        Score score = new Score();
+        score.setPlayer(user); // 👈 USERNAME indirectly saved via User entity
+        score.setTournament(tournament); // 👈 Saves tournament ID
+        score.setCorrectAnswers(correctCount);
+        score.setPlayerScore(correctCount); // Or correctCount * 10
+        score.setCompletedDate(LocalDateTime.now());
+        score.setAnswers(submittedAnswers); // Optional but nice
 
-        // Create and save the Score record
-        Score scoreRecord = new Score();
-        scoreRecord.setTournament(tournament);
-        scoreRecord.setPlayer(user);
-        scoreRecord.setPlayerScore(score);
-        scoreRecord.setCorrectAnswers(correctCount);
-        scoreRecord.setAnswers(submittedAnswers);
-        scoreRecord.setCompletedDate(LocalDateTime.now());
-
-        scoreRepository.save(scoreRecord);  // Save the score record
-
-        return scoreRecord;
+        return scoreRepository.save(score); // 👈 THIS SAVES TO DATABASE
     }
+
+
 
     public Score savePlayerScore(Tournament tournament, User player, int playerScore) {
         Score score = new Score(tournament, player, playerScore, LocalDateTime.now());
@@ -94,9 +91,12 @@ public class ScoreService {
         return scoreRepository.findByPlayer(player);
     }
 
+    public List<Score> getLeaderboard(Long tournamentId) {
+        return scoreRepository.findByTournamentIdOrderByPlayerScoreDesc(tournamentId);
+    }
 
 
-    // Provide feedback (unchanged)
+
     public List<String> provideFeedback(List<String> submittedAnswers, List<String> correctAnswers) {
         List<String> feedback = new ArrayList<>();
         for (int i = 0; i < correctAnswers.size(); i++) {

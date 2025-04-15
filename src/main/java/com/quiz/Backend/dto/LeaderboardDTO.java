@@ -8,14 +8,13 @@ public class LeaderboardDTO {
     private int score;
     private LocalDateTime completionDate;
 
-    // Constructor
     public LeaderboardDTO(String playerName, int score, LocalDateTime completionDate) {
         this.playerName = playerName;
         this.score = score;
         this.completionDate = completionDate;
     }
 
-    // Getters and Setters
+
     public String getPlayerName() {
         return playerName;
     }

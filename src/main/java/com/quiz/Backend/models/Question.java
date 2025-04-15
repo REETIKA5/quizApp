@@ -1,7 +1,4 @@
 package com.quiz.Backend.models;
-
-
-
 import jakarta.persistence.*;
 import java.util.List;
 
@@ -18,6 +15,7 @@ public class Question {
 
     @ElementCollection
     private List<String> incorrectAnswers;
+
     private String questionType;
 
     @ManyToOne

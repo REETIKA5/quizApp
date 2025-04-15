@@ -15,6 +15,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/scores")
+
 public class ScoreController {
 
     private final ScoreService scoreService;
@@ -28,7 +29,7 @@ public class ScoreController {
         this.tournamentService = tournamentService;
     }
 
-    @PostMapping("/{tournamentId}/{username}")
+    @PostMapping("submit/{tournamentId}/{username}")
     public ResponseEntity<Score> saveScore(@PathVariable Long tournamentId,
                                            @PathVariable String username,
                                            @RequestParam int playerScore) {
@@ -38,13 +39,23 @@ public class ScoreController {
         Score score = scoreService.savePlayerScore(tournament, user, playerScore);
         return new ResponseEntity<>(score, HttpStatus.CREATED);
     }
+
     @PostMapping("/submit/{tournamentId}/{userId}")
-    public ResponseEntity<Score> submitQuiz(@PathVariable Long tournamentId,
-                                            @PathVariable Long userId,
-                                            @RequestParam List<String> submittedAnswers) {
+    public ResponseEntity<Score> submitQuiz(
+            @PathVariable Long tournamentId,
+            @PathVariable Long userId,
+            @RequestBody List<String> submittedAnswers
+    ) {
         Score score = scoreService.submitQuiz(tournamentId, userId, submittedAnswers);
         return new ResponseEntity<>(score, HttpStatus.CREATED);
     }
+
+    @GetMapping("/leaderboard/{tournamentId}")
+    public ResponseEntity<List<Score>> getLeaderboard(@PathVariable Long tournamentId) {
+        List<Score> leaderboard = scoreService.getLeaderboard(tournamentId);
+        return ResponseEntity.ok(leaderboard);
+    }
+
 
     @GetMapping("/tournament/{id}")
     public List<Score> getScoresByTournament(@PathVariable Long tournamentId) {
